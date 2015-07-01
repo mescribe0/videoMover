@@ -27,7 +27,7 @@ my $log = "$dirname/movieRenamer.log";
 
 my $movieOkDir = $config{movieOkDir};
 my $movieKoDir = $config{movieKoDir};
-my $downloadedDir = $config{destination_dir};
+my $downloadedDir = $config{downloaded_dir};
 
 # open
 open(my $fh_exclude, '<', $excludeList);

@@ -31,9 +31,9 @@ _current_date () {
 # BOUCLE FILMS #
 _main_video () {
   # Copie du fichier & log
-  cp "${TR_TORRENT_DIR}/${line}" "${destination_dir}/${fileName}.tmp"
-  mv "${destination_dir}/${fileName}.tmp" "${destination_dir}/${fileName}"
-  chmod 0775 "${destination_dir}/${filename}"
+  cp "${TR_TORRENT_DIR}/${line}" "${downloaded_dir}/${fileName}.tmp"
+  mv "${downloaded_dir}/${fileName}.tmp" "${downloaded_dir}/${fileName}"
+  chmod 0775 "${downloaded_dir}/${filename}"
 
   /usr/bin/sqlite3 $db_file \
     "INSERT INTO

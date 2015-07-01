@@ -1,6 +1,4 @@
-install_dir=
-source_dir=
-destination_dir=
+downloaded_dir=
 support_file=".avi,.mkv,.mp4,.srt,.sub,.idx,.img,.mpg,.m4v,.mov,.ogm,.ogv,.wmv"
 db_file=
 tracker=
