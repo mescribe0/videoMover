@@ -63,8 +63,8 @@ CR=$?
 mySupportFile=`echo "$support_file$" | sed 's/,/$|/g'`
 
 # delete tracker
-/usr/bin/transmission-remote -t${TR_TORRENT_ID} --tracker-remove "${tracker}/${key1}"
-/usr/bin/transmission-remote -t${TR_TORRENT_ID} --tracker-add "${tracker}/${key2}"
+/usr/bin/transmission-remote -t${TR_TORRENT_ID} --tracker-remove "${tracker}/${key2}/${announce}"
+/usr/bin/transmission-remote -t${TR_TORRENT_ID} --tracker-add "${tracker}/${key1}/${announce}"
 
 # Boucle principale : Movie / TVShow
 # Get torrrent file

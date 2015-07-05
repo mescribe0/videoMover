@@ -1,5 +1,5 @@
 #!/bin/bash
-# set -x
+ set -x
 
 confFile=$(dirname $0)/videoMover.conf
 [ ! -f ${confFile} ] && _warning "fichier de conf non present : ${confFile}" && exit 1
@@ -20,10 +20,10 @@ if [ "$(whoami)" != "${user}" ] ; then exit 0 ; fi
   downlaod=$(echo "$line" | cut -c42- | awk -F\. '{print $1}')
 
   if [ ${downlaod} -gt 0 ] ; then
-    /usr/bin/transmission-remote -t${id} -i | grep "^  Magnet" | grep "${key1}"
+    /usr/bin/transmission-remote -t${id} -i | grep "^  Magnet" | grep "${key2}"
     if [ $? -eq 0 ] ; then
       # echo "${id} - $(/usr/bin/transmission-remote -t${id} -i | grep "^  Name")"
-      /usr/bin/transmission-remote -t${id} --tracker-remove "${tracker}/${key1}"
+      /usr/bin/transmission-remote -t${id} --tracker-remove "${tracker}/${key2}/${announce}"
     fi
   fi
 done

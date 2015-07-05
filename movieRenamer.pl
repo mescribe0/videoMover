@@ -16,7 +16,7 @@ my @exclude;
 my %h_infos;
 my %config;
 
-my $mintime = 900;
+my $mintime = 0;
 my $minSearchWords = 2;
 
 my $dirname = dirname(__FILE__);
@@ -119,7 +119,7 @@ while (my $file = readdir(DIR)) {
   my $imdbObj;
   my $T; # Tilte
   my $fileAbsoPatch = $downloadedDir."/".$file;
-  say $file ;
+  # say $file ;
   
   # title / extension
   if ($file =~ /(?<title>.*)(?<ext>\..*\z){1}/) {
