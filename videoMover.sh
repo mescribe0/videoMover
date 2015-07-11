@@ -52,13 +52,31 @@ confFile=$(dirname $0)/videoMover.conf
 CR=$?
 [ $CR != 0 ] && _warning "Pb export du fichier de conf : ${confFile} " && exit 1
 
-# Varible
+# Variable
 # TR_TORRENT_NAME
 # TR_TORRENT_DIR
 # TR_TORRENT_ID
 # TR_TORRENT_HASH
 # TR_APP_VERSION
 # TR_TIME_LOCALTIME
+
+
+
+while getopts ":t:" opt ; do
+  case $opt in
+    t)  TR_TORRENT_ID=$OPTARG
+        TR_TORRENT_NAME=$(/usr/bin/transmission-remote -t${TR_TORRENT_ID} -i | egrep "^  Name:" | cut -c9-)
+        TR_TORRENT_DIR=$download_dir
+        if [ "x$TR_TORRENT_NAME" == "x" ] ; then 
+          echo "inexistant ID : torrent $TR_TORRENT_ID"
+          exit 1
+        fi
+    ;;
+    \?)  echo " option $OPTARG  INVALIDE" 
+        exit 1
+    ;;
+  esac
+done
 
 mySupportFile=`echo "$support_file$" | sed 's/,/$|/g'`
 
