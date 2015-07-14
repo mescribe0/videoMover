@@ -16,7 +16,6 @@ my @exclude;
 my %h_infos;
 my %config;
 
-my $mintime = 0;
 my $minSearchWords = 2;
 
 my $dirname = dirname(__FILE__);
@@ -35,7 +34,7 @@ opendir(DIR, $downloadedDir);
 
 # DBI sqlite
 my $driver   = "SQLite";
-my $database = "$dirname/videoMover.db";
+my $database = "$config{db_file}";
 my $dsn = "DBI:$driver:dbname=$database";
 my $userid = "";
 my $password = "";
@@ -135,11 +134,11 @@ while (my $file = readdir(DIR)) {
   my $imdbObj;
   my $T; # Tilte
   my $fileAbsoPatch = $downloadedDir."/".$file;
-  # say $file ;
+
   
   # time check
-  next if chkFileTime($fileAbsoPatch, $mintime);
-
+  next if chkFileTime($fileAbsoPatch, $config{mintime});
+  say $file ;
 
   # title / extension
   if ($file =~ /(?<title>.*)(?<ext>\..*\z){1}/) {
