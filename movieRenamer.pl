@@ -26,7 +26,6 @@ my $excludeList="$dirname/exclude.lst";
 my $log = "$dirname/movieRenamer.log";
 
 my $movieOkDir = $config{movieOkDir};
-my $movieKoDir = $config{movieKoDir};
 my $downloadedDir = $config{downloaded_dir};
 
 # open
@@ -96,9 +95,21 @@ sub chkFileName {
   return $return
 }
 
+sub getMovieRenamer {
+  my ($file) = @_;
+  my $ary_ref  = $dbh->selectcol_arrayref("SELECT movieRenamer FROM video WHERE fname like '%${file}'");
+  return @$ary_ref[0];
+}
+sub updateMovieRenamer {
+  my ($file) = @_;
+  my $sth = $dbh->prepare(qq{
+    UPDATE video SET movieRenamer = 1 WHERE fname like '%${file}'
+  });
+  $sth->execute();
+}
+
 ##################
 # main program
-
 # exclude word
 while (<$fh_exclude>) {
   chomp($_);
@@ -111,8 +122,13 @@ while (<$fh_exclude>) {
 # main boucle
 while (my $file = readdir(DIR)) {
   chomp($file);
+  
+  # CHECK 
   next if ($file =~ /\A\.|[Ss]\d\d.?[eE]\d\d|\d{1,2}[xX]\d\d/);
   next if (chkFileName("$file", "saison"));
+  # check if already test
+  my $check = getMovieRenamer($file);
+  next if ( $check > 0 );
   
   my $newName;
   my %hsearch;
@@ -121,6 +137,10 @@ while (my $file = readdir(DIR)) {
   my $fileAbsoPatch = $downloadedDir."/".$file;
   # say $file ;
   
+  # time check
+  next if chkFileTime($fileAbsoPatch, $mintime);
+
+
   # title / extension
   if ($file =~ /(?<title>.*)(?<ext>\..*\z){1}/) {
     $T = $+{title};
@@ -133,8 +153,7 @@ while (my $file = readdir(DIR)) {
 
     $h_infos{$T}{ext} = $ext;
   }
-  # time check
-  next if chkFileTime($fileAbsoPatch, $mintime);
+
   # year
   $h_infos{$T}{year} = getYear($T);
   # title_short
@@ -182,30 +201,27 @@ while (my $file = readdir(DIR)) {
      }
   }
 
-
+  updateMovieRenamer($file);
+  say $fh_log "($h_infos{$T}{status}) - $file";
+  
   if ($h_infos{$T}{status}) {
     $newName = $h_infos{$T}{imdbTitle}." (".$h_infos{$T}{imdbYear}.")".$h_infos{$T}{ext};
+    $newName =~ s/[\Q\/:*?"<>|\E]//g;
+    
     if ( -e "$movieOkDir/$newName" ) {
-      $h_infos{$T}{moveDir} = $movieKoDir;
-      $newName = "(exist deja)($newName)$file";
+      $h_infos{$T}{moveDir} = $movieOkDir;
+      say $fh_log "    [ERROR] \"$newName\" : exite deja";
     } else {
       $h_infos{$T}{moveDir} = $movieOkDir;
+      move("$fileAbsoPatch","$h_infos{$T}{moveDir}/$newName");
     }
-  } else {
-    $h_infos{$T}{moveDir} = $movieKoDir;
-    $newName = "$file";
+    
   }
-  
-  
-  $newName =~ s/[\Q\/:*?"<>|\E]//g;
-  move("$fileAbsoPatch","$h_infos{$T}{moveDir}/$newName");
 
-  say $fh_log "($h_infos{$T}{status}) - $file";
   say $fh_log "       INIT    : @{$h_infos{$T}{title_exclude}}";
   say $fh_log "       SEARCH  : $hsearch{crit} (Y=$h_infos{$T}{year}) (P=$h_infos{$T}{excludesearch})";
   say $fh_log "       IMDB    : $h_infos{$T}{imdbTitle} ($h_infos{$T}{imdbYear})";
   say $fh_log "       NEWNAME : $newName ($h_infos{$T}{moveDir})";
-  say $fh_log "";
 }
 
 
