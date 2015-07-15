@@ -1,7 +1,7 @@
 #!/bin/bash
- set -x
+# set -x
 
-confFile=$(dirname $0)/videoMover.conf
+confFile=$(dirname $0)/etc/videoMover.conf
 [ ! -f ${confFile} ] && _warning "fichier de conf non present : ${confFile}" && exit 1
 . ${confFile}
 CR=$?

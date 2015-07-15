@@ -19,9 +19,9 @@ my %config;
 my $minSearchWords = 2;
 
 my $dirname = dirname(__FILE__);
-configLoad("$dirname/videoMover.conf", \%config);
+configLoad("$dirname/etc/videoMover.conf", \%config);
 
-my $excludeList="$dirname/exclude.lst";
+my $excludeList="$dirname/etc/exclude.lst";
 my $log = "$dirname/movieRenamer.log";
 
 my $movieOkDir = $config{movieOkDir};
