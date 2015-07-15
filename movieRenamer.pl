@@ -9,6 +9,9 @@ use File::Basename;
 use DBI;
 use autodie;
 
+require "lib/Perl/lib_array.pl";
+require "lib/Perl/lib_utils.pl";
+
 no warnings 'experimental::smartmatch';
 
 # variable
@@ -28,7 +31,6 @@ my $movieOkDir = $config{movieOkDir};
 my $downloadedDir = $config{downloaded_dir};
 
 # open
-open(my $fh_exclude, '<', $excludeList);
 open(my $fh_log, '>>', $log) ;
 opendir(DIR, $downloadedDir);
 
@@ -42,23 +44,6 @@ my $dbh = DBI->connect($dsn, $userid, $password, { RaiseError => 1 })
                       or die $DBI::errstr;
 
 # fonctions
-sub configLoad {
-  my ($file, $hash) = @_;
-  
-  open my $fh , '<', $file;
-  
-  while (<$fh>) {
-    chomp($_);
-    next if ($_ =~ /^$/);
-    next if ($_ =~ /^\s*$/);
-    next if ($_ =~ /^\s*#/);
-    my ($key, $value) = split(/=/, $_);
-    $hash->{$key} = $value;
-  }
-
-  close($fh);
-}
-
 sub getYear {
   my $filename = shift;
   my $year;
@@ -79,12 +64,11 @@ sub chkFileTime {
   return($cr);
 }
 
-
 sub chkFileName {
   my ($file, $word) = @_;
   my $return = 0;
   my $href = $dbh->selectall_hashref("SELECT * FROM video WHERE fname like '%${file}'", "id");
-  
+
   foreach my $video ( keys %{ $href } ) {
     my $fname = $href->{$video}{fname};
 	next if ( $fname !~ /^$file/ && $fname !~ /\/$file/);
@@ -99,6 +83,7 @@ sub getMovieRenamer {
   my $ary_ref  = $dbh->selectcol_arrayref("SELECT movieRenamer FROM video WHERE fname like '%${file}'");
   return @$ary_ref[0];
 }
+
 sub updateMovieRenamer {
   my ($file) = @_;
   my $sth = $dbh->prepare(qq{
@@ -110,32 +95,26 @@ sub updateMovieRenamer {
 ##################
 # main program
 # exclude word
-while (<$fh_exclude>) {
-  chomp($_);
-  next if /^\s*$/;
-  $_=lc($_);
-  $_ =~ s/^\s+|\s+$//g;
-  push(@exclude, $_);
-}
+@exclude = file2array($excludeList);
 
 # main boucle
 while (my $file = readdir(DIR)) {
   chomp($file);
-  
-  # CHECK 
+
+  # CHECK
   next if ($file =~ /\A\.|[Ss]\d\d.?[eE]\d\d|\d{1,2}[xX]\d\d/);
   next if (chkFileName("$file", "saison"));
   # check if already test
   my $check = getMovieRenamer($file);
   next if ( $check > 0 );
-  
+
   my $newName;
   my %hsearch;
   my $imdbObj;
   my $T; # Tilte
   my $fileAbsoPatch = $downloadedDir."/".$file;
 
-  
+
   # time check
   next if chkFileTime($fileAbsoPatch, $config{mintime});
   say $file ;
@@ -171,9 +150,9 @@ while (my $file = readdir(DIR)) {
   }
   # title_exclude
   my @wordsTitle = split(/[\s\Q._-()[]\E]/, $h_infos{$T}{title_short} );
-  @{$h_infos{$T}{title_exclude}} = grep{ not /\A$_\z/i ~~ @exclude } @wordsTitle;
-  @{$h_infos{$T}{title_exclude}} = grep { $_ ne '' } @{$h_infos{$T}{title_exclude}};
-
+  @{$h_infos{$T}{title_exclude}} = arraySubstract(\@wordsTitle, \@exclude);
+  @{$h_infos{$T}{title_exclude}} = arrayRemoveEmpty(\@{$h_infos{$T}{title_exclude}});
+  
   # search IMDB
   my $i;
   my @titlesearch = @{$h_infos{$T}{title_exclude}};
@@ -202,11 +181,11 @@ while (my $file = readdir(DIR)) {
 
   updateMovieRenamer($file);
   say $fh_log "($h_infos{$T}{status}) - $file";
-  
+
   if ($h_infos{$T}{status}) {
     $newName = $h_infos{$T}{imdbTitle}." (".$h_infos{$T}{imdbYear}.")".$h_infos{$T}{ext};
     $newName =~ s/[\Q\/:*?"<>|\E]//g;
-    
+
     if ( -e "$movieOkDir/$newName" ) {
       $h_infos{$T}{moveDir} = $movieOkDir;
       say $fh_log "    [ERROR] \"$newName\" : exite deja";
@@ -214,7 +193,7 @@ while (my $file = readdir(DIR)) {
       $h_infos{$T}{moveDir} = $movieOkDir;
       move("$fileAbsoPatch","$h_infos{$T}{moveDir}/$newName");
     }
-    
+
   }
 
   say $fh_log "       INIT    : @{$h_infos{$T}{title_exclude}}";
@@ -226,7 +205,6 @@ while (my $file = readdir(DIR)) {
 
 # say $fh_log Dumper(\%h_infos);
 $dbh->disconnect();
-close($fh_exclude);
 close($fh_log);
 closedir(DIR);
 
