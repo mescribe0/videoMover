@@ -102,4 +102,5 @@ mySupportFile=`echo "$support_file$" | sed 's/,/$|/g'`
 
   # video
   _main_video
+  sleep 2
 done
