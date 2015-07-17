@@ -62,7 +62,7 @@ sub chkFileTime {
 sub chkFileEligibility {
   my ($file) = @_;
   my $return = 0;
-  my @words = qw(saison autre test);
+  my @words = qw(saison);
   
   my $href = $dbh->selectall_hashref( "SELECT * FROM video WHERE fname like '%${file}'", "id" );
 #  say Dumper(\$href);
