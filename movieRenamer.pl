@@ -11,6 +11,7 @@ use autodie;
 
 require "lib/Perl/lib_array.pl";
 require "lib/Perl/lib_utils.pl";
+require "lib/Perl/lib_dbi.pl";
 
 no warnings 'experimental::smartmatch';
 
@@ -35,13 +36,7 @@ open(my $fh_log, '>>', $log) ;
 opendir(DIR, $downloadedDir);
 
 # DBI sqlite
-my $driver   = "SQLite";
-my $database = "$config{db_file}";
-my $dsn = "DBI:$driver:dbname=$database";
-my $userid = "";
-my $password = "";
-my $dbh = DBI->connect($dsn, $userid, $password, { RaiseError => 1 })
-                      or die $DBI::errstr;
+my $dbh = sqliteConnect($config{db_file});
 
 # fonctions
 sub getYear {
