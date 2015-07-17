@@ -1,3 +1,6 @@
 *.log
 *.db
 *.conf
+.project
+.includepath
+.settings
