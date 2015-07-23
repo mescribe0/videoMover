@@ -32,7 +32,7 @@ my $movieOkDir = $config{movieOkDir};
 my $downloadedDir = $config{downloaded_dir};
 
 # open
-open(my $fh_log, '>>', $log) ;
+open(my $fh_log, '>>:encoding(UTF-8)', $log) ;
 opendir(DIR, $downloadedDir);
 
 # DBI sqlite
@@ -62,10 +62,10 @@ sub chkFileTime {
 sub chkFileEligibility {
   my ($file) = @_;
   my $return = 0;
-  my @words = qw(saison);
+  my @words = qw(saison episode season);
   
   my $href = $dbh->selectall_hashref( "SELECT * FROM video WHERE fname like '%${file}'", "id" );
-#  say Dumper(\$href);
+  # say Dumper(\$href);
   
   if ( scalar keys  %$href == 0 ) {
     
@@ -79,20 +79,20 @@ sub chkFileEligibility {
   } else {
     
     foreach my $video ( sort keys %{$href} ) {
+
       my $fname = $href->{$video}{fname};
-      next if ( $fname !~ /^$file/ && $fname !~ /\/$file/ );
-      
+      next if ( $fname ne $file && $fname !~ /\/$file/ );
+
       foreach ( @words ) { 
         if ( $fname =~ /$_/i ) { $return = 1 }
       }
-      
+
       my $mr = $href->{$video}{movieRenamer};
       if ( $mr != 0 ) { $return = 1 } 
-     
       last if ( $return != 0 ); 
     }    
   }
-  
+
   return $return;
 }
 
