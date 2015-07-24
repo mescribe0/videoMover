@@ -64,14 +64,14 @@ sub chkFileEligibility {
   my $return = 0;
   my @words = qw(saison episode season);
   
-  my $href = $dbh->selectall_hashref( "SELECT * FROM video WHERE fname like '%${file}'", "id" );
+  my $href = $dbh->selectall_hashref( "SELECT * FROM video WHERE fnameOut = '${file}'", "id" );
   # say Dumper(\$href);
   
   if ( scalar keys  %$href == 0 ) {
     
     my $sth = $dbh->prepare(
       qq{
-      INSERT INTO video(fname) values("$file")
+      INSERT INTO video(fnameOut) values("$file")
     }
     );
     $sth->execute();
@@ -79,12 +79,10 @@ sub chkFileEligibility {
   } else {
     
     foreach my $video ( sort keys %{$href} ) {
-
       my $fname = $href->{$video}{fname};
-      next if ( $fname ne $file && $fname !~ /\/$file/ );
 
-      foreach ( @words ) { 
-        if ( $fname =~ /$_/i ) { $return = 1 }
+      if ( $fname ) {
+        foreach ( @words ) { if ( $fname =~ /$_/i ) { $return = 1 } }
       }
 
       my $mr = $href->{$video}{movieRenamer};
@@ -99,7 +97,7 @@ sub chkFileEligibility {
 sub updateMovieRenamer {
   my ($file) = @_;
   my $sth = $dbh->prepare(qq{
-    UPDATE video SET movieRenamer = 1 WHERE fname like '%${file}'
+    UPDATE video SET movieRenamer = 1 WHERE fnameOut = '${file}'
   });
   $sth->execute();
 }
@@ -114,6 +112,7 @@ while (my $file = readdir(DIR)) {
   chomp($file);
 
   # CHECK
+  next if ( $file =~ /\.tmp$/ );
   next if ($file =~ /\A\.|[Ss]\d\d.?[eE]\d\d|\d{1,2}[xX]\d\d/);
   next if ( chkFileEligibility("$file") );
 

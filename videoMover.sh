@@ -37,8 +37,8 @@ _main_video () {
 
   /usr/bin/sqlite3 $db_file \
     "INSERT INTO
-      video(tname,fname)
-      values('${TR_TORRENT_NAME}','$lineForSql');"
+      video(tname,fname,fnameOut)
+      values(\"${TR_TORRENT_NAME}\",\"$line\",\"$fileName\");"
 }
 
 
@@ -87,15 +87,14 @@ mySupportFile=`echo "$support_file$" | sed 's/,/$|/g'`
 # Boucle principale : Movie / TVShow
 # Get torrrent file
 /usr/bin/transmission-remote -t${TR_TORRENT_ID} --files | grep ": 100%" | grep -E "$mySupportFile$" |cut -c35- | while read line ; do
-  lineForSql=$(echo "$line" | sed "s/'/''/g")
 
   # controle si existe deja
-  _count "video" "$lineForSql"
+  _count "video" "$line"
   if [ "$?" -ne "0" ]  ; then
-    echo "existe deja : $lineForSql "
+    echo "existe deja : $line "
     continue
   else
-    echo "On continue : $lineForSql "
+    echo "On continue : $line "
   fi
 
   fileName=$(echo $line| awk -F\/ '{print $NF}')
