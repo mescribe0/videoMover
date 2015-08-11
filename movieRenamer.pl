@@ -115,6 +115,7 @@ while (my $file = readdir(DIR)) {
   next if ( $file =~ /\.tmp$/ );
   next if ($file =~ /\A\.|[Ss]\d\d.?[eE]\d\d|\d{1,2}[xX]\d\d/);
   # time check
+  my $fileAbsoPatch = $downloadedDir."/".$file;
   next if chkFileTime($fileAbsoPatch, $config{mintime});
   next if ( chkFileEligibility("$file") );
   
@@ -124,7 +125,7 @@ while (my $file = readdir(DIR)) {
   my %hsearch;
   my $imdbObj;
   my $T; # Tilte
-  my $fileAbsoPatch = $downloadedDir."/".$file;
+
 
   # title / extension
   if ($file =~ /(?<title>.*)(?<ext>\..*\z){1}/) {
