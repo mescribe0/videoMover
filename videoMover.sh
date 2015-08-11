@@ -33,7 +33,7 @@ _main_video () {
   # Copie du fichier & log
   cp "${TR_TORRENT_DIR}/${line}" "${downloaded_dir}/${fileName}.tmp"
   mv "${downloaded_dir}/${fileName}.tmp" "${downloaded_dir}/${fileName}"
-  chmod 0775 "${downloaded_dir}/${filename}"
+  chmod 0775 "${downloaded_dir}/${fileName}"
 
   /usr/bin/sqlite3 $db_file \
     "INSERT INTO
